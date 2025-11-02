@@ -1,0 +1,2 @@
+solidpython2
+#solidpython2-legacy # needs update for compat with newer solidpython
