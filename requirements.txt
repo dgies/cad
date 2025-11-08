@@ -1,2 +1,5 @@
 solidpython2
-#solidpython2-legacy # needs update for compat with newer solidpython
+cadquery
+CQ-editor
+jupyter-cadquery
+build123d
