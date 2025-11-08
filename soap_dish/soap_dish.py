@@ -1,8 +1,10 @@
 import math
+import time
 from datetime import datetime
+from subprocess import run
 
-from solid2 import cube, text, cylinder, set_global_fn, translate, intersection, union
-from solid2.extensions.bosl2 import top_half, rot, std, UP, cuboid, text3d
+from solid2 import cube, cylinder, set_global_fn, translate, intersection
+from solid2.extensions.bosl2 import rot, cuboid, text3d
 
 # set the number of faces for curved shapes
 set_global_fn(120)
@@ -19,15 +21,19 @@ def make_beam(v1, v2, h, w, zrot=0):
 
 class Model():
 
-    def __init__(self):
+    def __init__(self, side='LEFT'):
         self._model = cube(0, 0, 0)
         self.thickness = 4
         self.length = 120
         self.width = 90
         self.height = 30
         self.radius = 10
-        self.ridge_angle = 30
         self.ridge_thickness = 2.5
+        self.hole_side = side
+        if self.hole_side == 'LEFT':
+            self.ridge_angle = 30
+        else:
+            self.ridge_angle = -30
         self.build_body()
         self.cut_basin()
         self.clip_ridges()
@@ -57,8 +63,12 @@ class Model():
 
     def cut_drain_hole(self):
         hole = cylinder(d=self.get_drain_hole_radius(), h=self.radius)
-        hole = rot(_from=[0,0,1],to=[-1,-1,0], a=0)(hole) # rotate
-        hole = hole.translate([-self.length/2+self.radius, -self.width/2+self.radius, self.height/2-self.radius/2])
+        if self.hole_side == 'LEFT':
+            hole = rot(_from=[0,0,1],to=[-1,-1,0], a=0)(hole)
+            hole = hole.translate([-self.length/2+self.radius, -self.width/2+self.radius, self.height/2-self.radius/2])
+        else:
+            hole = rot(_from=[0,0,1],to=[1,-1,0], a=0)(hole)
+            hole = hole.translate([+self.length/2-self.radius, -self.width/2+self.radius, self.height/2-self.radius/2])
         self._model = self._model - hole
 
     def get_ridge_height(self):
@@ -98,13 +108,13 @@ class Model():
     def add_ridges(self):
         xoffset = self.ridge_thickness * 4
         lump = self.make_lump()
-        yoffset = (self.get_ridge_length()-0.5*self.ridge_thickness/2) * math.cos(self.ridge_angle*math.pi/180) - 0.55*(self.ridge_thickness)*math.sin(self.ridge_angle*math.pi/180)
+        yoffset = (self.get_ridge_length()-0.5*self.ridge_thickness/2) * math.cos(self.ridge_angle*math.pi/180) - 0.55*(self.ridge_thickness)*abs(math.sin(self.ridge_angle*math.pi/180))
         top_lump = lump.rotateZ(2*self.ridge_angle).translateY(yoffset)
         bottom_lump = top_lump.translateY(-2*yoffset)
 
         RIDGE = top_lump + lump + bottom_lump
         ridges = None
-        # ridges = self.lump2().translateX(-10*xoffset)
+        # ridges = self.make_lump().translateX(-10*xoffset)
         for j in range(0,6):
             i = j+0.5
             if ridges is None:
@@ -118,27 +128,35 @@ class Model():
         text_size = 5
         text = text3d(f"DFG {str(datetime.now().year)}", text_height, text_size, "SF Mono:style=Heavy", language ="en", script ="latin", direction ="ltr")
         text = text.color("#8080ff")
-        # text = text.rotateZ(180)
         text = text.rotateX(180)
         text = text.translate([-self.length/2+1.0*self.radius, self.width/2-1.0*self.radius, -self.height/2-0*self.radius+0.5*text_height])
         self._model = self._model - text
 
+    def scad_file_name(self):
+        return f"soap_dish_{self.hole_side}.scad"
 
-    def cut_floor(self):
-        size = self.width*2 # oversize for width of feet
-        floor = cube(size,size,self.height)
-        floor = floor.translate(-size/2,-size/2,-self.height)
-        # floor = floor.background()
-        self.model = self.model - floor + floor.background()#.color("#40404040")
-
+    def stl_file_name(self):
+        return f"soap_dish_{self.hole_side}.stl"
 
     def save_as_scad(self):
-        self._model.save_as_scad()
+        self._model.save_as_scad(self.scad_file_name())
+
+    def save_as_scad_and_stl(self):
+        self.save_as_scad()
+        run(["openscad", "-o", self.stl_file_name(), self.scad_file_name()])
 
 def main():
-    model = Model()
-    # save your model for use in OpenSCAD
-    model.save_as_scad()
+    start_time = time.perf_counter()
+
+    # make one
+    model = Model(side='LEFT')
+    print(f"Model generated in {time.perf_counter() - start_time:.4f} seconds")
+    model.save_as_scad_and_stl()
+
+    # make the other
+    model = Model(side='RIGHT')
+    model.save_as_scad_and_stl()
+    print(f"Models exported and converted in {time.perf_counter() - start_time:.4f} seconds")
 
 if __name__ == '__main__':
     main()
