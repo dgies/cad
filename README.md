@@ -15,5 +15,6 @@ Closed-type soap dish with drain hole implemeted in SolidPython
 Open-type soap dish shaped as isosceles right triangle for use on triangular shower shelves.  
 Implemented in CadQuery and stored in a Jupyter notebook for interactive debugging. 
 
-## Umbrella Hook v4
-Unfinished project to generate a lamp hook for Treasure Garden patio umbrellas.
+## Umbrella Hook
+Iterative project to design the perfect lamp hook for Treasure Garden patio umbrellas.
+Versions 1-3 are modeled in traditional CAD.
