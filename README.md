@@ -9,7 +9,7 @@ Run with `python3 bridge.py` to generate a SCAD file, then load that into OpenSC
 _Named because it was designed to hold dowels to hang little toy iMacs for painting with primer._
 
 ## Soap Dish
-Closed-type soap dish with drain hole implemeted in SolidPython
+Closed-type soap dish with drain hole implemented in SolidPython
 
 ## Triangle Soap Dish
 Open-type soap dish shaped as isosceles right triangle for use on triangular shower shelves.  
@@ -18,3 +18,7 @@ Implemented in CadQuery and stored in a Jupyter notebook for interactive debuggi
 ## Umbrella Hook
 Iterative project to design the perfect lamp hook for Treasure Garden patio umbrellas.
 Versions 1-3 are modeled in traditional CAD.
+* V1 FreeCAD: Unusable because jaw is too small
+* V2 FreeCAD: Stress concentration at jaw attachment
+* V3 TinkerCAD: Jaw is ugly, closed tool
+* V4 CadQuery: Redesign of V2 with stress relief and angled tooth
