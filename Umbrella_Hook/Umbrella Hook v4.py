@@ -18,7 +18,7 @@
 # ## Key Facts
 #
 # * Beam is 16mm w x 24mm tall at 12.5º angle
-# * Wing overhang 12mm-> 36mm
+# * Wing overhang 18mm-> 32mm
 #
 # | Dimension   | value |
 # | ----------- | ----- |
@@ -26,21 +26,20 @@
 # | beam_width  = 16
 # | beam_height = 24
 # | beam_angle  = 12.5
-# | drop        = hook_length*tan(beam_angle)
 #
 
 # +
 from math import sin,cos,tan, asin,acos, atan, radians, floor, degrees, sqrt
 from datetime import datetime
 from types import SimpleNamespace
-
+from timeit import default_timer as timer
 
 import pprint as pp
 import cadquery as cq
 from jupyter_cadquery import show, set_defaults, open_viewer, Camera
 from jupyter_cadquery.replay import enable_replay, disable_replay, reset_replay, get_context, replay, Replay, _CTX
-from ocp_tessellate.convert import to_assembly
 
+start = timer()
 cv = open_viewer("Box", cad_width=780, height=525)
 set_defaults(reset_camera=Camera.RESET, show_parent=False, axes=True, axes0=True)
 
@@ -71,7 +70,6 @@ m.wing_height_far  = m.body_thickness_far + m.wing_drop_far
 m.edge_fillet = 0.5
 m.wing_drop = m.wing_drop_near - m.wing_drop_far
 m.wing_hyp = sqrt(m.wing_drop**2 + m.reach**2)
-# m.stylish_angle = degrees(asin(m.wing_drop / m.wing_hyp))
 
 m.h_ext = 12
 m.scale_jaw = (m.reach - m.h_ext) / m.reach
@@ -81,7 +79,7 @@ m.jaw_drop = (m.wing_drop_near + m.drop - m.wing_drop_far)
 m.stylish_angle = degrees(atan(m.jaw_drop / m.reach))
 
 
-print(f"Building from model {m}")
+print(f"Building from model {m} in {timer() - start}")
 
 # +
 # Make the top body
@@ -134,12 +132,9 @@ right_wing = (
 right_wing = (
     right_wing
     .extrude(m.wing_thickness)
-    .edges(">(0, -1, 1)")
-    .fillet(m.edge_fillet)
-    .edges(">(0, 1, 1)")
-    .fillet(m.edge_fillet)
-    # .edges(">(1, 0, 1)")
-    # .fillet(m.edge_fillet)
+    .edges(">(0, -1, 1)").fillet(m.edge_fillet) # top near
+    .edges(">(0, 1, 1)").fillet(m.edge_fillet) # top far
+    # .edges(">(1, 0, 1)").fillet(m.edge_fillet)
 )
     
 replay(right_wing)
@@ -163,12 +158,9 @@ signed_right_wing = (
 )
 signed_right_wing = (
     signed_right_wing
-    .edges(">(0, -1, -1)")
-    .fillet(m.edge_fillet)
-    .edges(">(0, 1, -1)")
-    .fillet(m.edge_fillet)
-    .edges(">(1, -1, 0)")
-    .fillet(m.edge_fillet)
+    .edges(">(0, -1, -1)").fillet(m.edge_fillet) # bottom near
+    .edges(">(0, 1, -1)").fillet(m.edge_fillet) # bottom far
+    .edges(">(1, -1, 0)").fillet(m.edge_fillet) # right face
 )
 
 replay(signed_right_wing)
@@ -183,21 +175,21 @@ left_wing = (
     # select left face bottom corner
     .faces("<X").vertices("<Z").workplane(centerOption="CenterOfMass")
     # draw the jaw with line segments
-    .line(-scale_jaw*m.reach, -scale_jaw*(m.wing_drop_near + m.drop - m.wing_drop_far)) # diag to far
+    .line(-m.scale_jaw*m.reach, -m.scale_jaw*(m.wing_drop_near + m.drop - m.wing_drop_far)) # diag to far
     .polarLine(m.h_ext, -180) # jaw out
     .polarLine(m.wing_thickness, 90) # up    
     .polarLine(m.h_ext, 0) # jaw back
-    .polarLine(0.35*scale_jaw*m.reach, m.stylish_angle)
-    .polarLine(0.35*scale_jaw*m.reach, 55)
-    .polarLine(0.05*scale_jaw*m.reach, 90)
-    .polarLine(0.35*scale_jaw*m.reach, 125)
+    .polarLine(0.35*m.scale_jaw*m.reach, m.stylish_angle)
+    .polarLine(0.35*m.scale_jaw*m.reach, 55)
+    .polarLine(0.05*m.scale_jaw*m.reach, 90)
+    .polarLine(0.35*m.scale_jaw*m.reach, 125)
     .close()
 ).extrude(-m.wing_thickness)
 
 # fillet completed faces
 left_wing = (
     left_wing
-    .edges(">( -1, -0.2, 1)").fillet(m.edge_fillet) #
+    .edges(">( -1, -0.2, 1)").fillet(m.edge_fillet) # left non-bottom edges
     .faces(">(0,-1, -1)").fillet(m.edge_fillet) # main jaw bottom
     .faces(">(0, 0, -1)").fillet(m.edge_fillet) # jaw ext bottom
     # .edges(">( 0, -1, -1)").fillet(m.edge_fillet) # near  bottom
@@ -228,6 +220,8 @@ replay(body)
 # +
 
 body.val().exportStl("Umbrella Hook v4.stl", ascii=True)
+
+print(f"Total time: {timer()-start}")
 # -
 
 
