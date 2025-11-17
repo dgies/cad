@@ -178,11 +178,12 @@ left_wing = (
     .line(-m.scale_jaw*m.reach, -m.scale_jaw*(m.wing_drop_near + m.drop - m.wing_drop_far)) # diag to far
     .polarLine(m.h_ext, -180) # jaw out
     .polarLine(m.wing_thickness, 90) # up    
-    .polarLine(m.h_ext, 0) # jaw back
-    .polarLine(0.35*m.scale_jaw*m.reach, m.stylish_angle)
-    .polarLine(0.35*m.scale_jaw*m.reach, 55)
+    .polarLine(m.h_ext-2, 0) # jaw back
+    .polarLine(0.45*m.scale_jaw*m.reach, m.stylish_angle)
+    .polarLine(0.30*m.scale_jaw*m.reach, 55)
     .polarLine(0.05*m.scale_jaw*m.reach, 90)
-    .polarLine(0.35*m.scale_jaw*m.reach, 125)
+    .polarLine(0.45*m.scale_jaw*m.reach, 125) # final leg long for design safety
+    .polarLine(0.5*m.wing_height_far, 90)     # extra up turn to ensure closed against wing
     .close()
 ).extrude(-m.wing_thickness)
 
@@ -201,11 +202,11 @@ left_wing = (
 left_wing = (
     left_wing
     .faces("+Z").workplane(centerOption="CenterOfMass")
-    .center(0,2)
+    .center(0,1)
     .rect(8,8)
     .workplane(offset=12)
-    .center(0,-2)
-    .rect(4,2)
+    .center(0,-3.5)
+    .rect(2,1)
     .loft(combine=True)
 )
 
