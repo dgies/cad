@@ -3,3 +3,4 @@ cadquery
 CQ-editor
 jupyter-cadquery
 build123d
+jupytext
