@@ -142,19 +142,24 @@ replay(right_wing)
 left_wing = right_wing.mirror(mirrorPlane="YZ", basePointVector=(0, 0, -30))
 
 # +
+sig = SimpleNamespace()
+sig.h_padding = 2
+sig.v_padding = -0.5
+sig.fontsize = 7
+sig.depth=-1.5
+sig.font = "Arial.ttf"
+sig.fontface = 'bold'
+sig.monogram = 'DFG'
+m.sig = sig
 
-h_padding = 2
-v_padding = -0.5
-fontsize = 7
-depth=-1.5
 signed_right_wing = (
     right_wing
         .faces(">X[-2]")
         .workplane()
-        .center(-h_padding ,-v_padding)
+        .center(-sig.h_padding ,-sig.v_padding)
         .transformed(offset=cq.Vector(0, -0, 0.0), rotate=cq.Vector(0, 0, -m.beam_angle))
-        .text(f"DFG {str(datetime.now().year)}", fontsize=fontsize, distance=depth, fontPath="Arial.ttf",
-         halign="right", valign="top", kind="bold")
+        .text(f"{sig.monogram} {str(datetime.now().year)}", fontsize=sig.fontsize, distance=sig.depth, fontPath=sig.font,
+         halign="right", valign="top", kind=sig.fontface)
 )
 signed_right_wing = (
     signed_right_wing
