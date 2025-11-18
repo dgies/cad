@@ -67,7 +67,7 @@ m.wing_drop_near = m.beam_height * 1.333
 m.wing_drop_far = m.beam_height * 0.6667
 m.wing_height_near = m.body_thickness_near + m.wing_drop_near
 m.wing_height_far  = m.body_thickness_far + m.wing_drop_far
-m.edge_fillet = 0.5
+m.edge_fillet = 1
 m.wing_drop = m.wing_drop_near - m.wing_drop_far
 m.wing_hyp = sqrt(m.wing_drop**2 + m.reach**2)
 
@@ -103,8 +103,9 @@ replay(right_body)
 # make bumps under body
 bump = SimpleNamespace()
 bump.height = 1.5
-bump.width = 3
+bump.width = 4
 bump.gap = 4
+bump.side_gap = 1
 bump.pitch = bump.width + bump.gap
 bump.count = floor(m.hook_length / bump.pitch)
 m.bump = bump
@@ -112,8 +113,9 @@ m.bump = bump
 pp.pp(m)
 right_body = (
     right_body.faces("<Z").workplane(centerOption="CenterOfMass")
+        .center(bump.side_gap / 2, 0)
         .rarray(0, m.bump.pitch, 1, m.bump.count, True)
-        .box(m.beam_width/2,m.bump.width,m.bump.height)
+        .box(m.beam_width/2 - bump.side_gap,m.bump.width,m.bump.height)
 )
 replay(right_body)
 
@@ -243,6 +245,8 @@ body.val().exportStl("Umbrella Hook v4.stl", ascii=True)
 
 print(f"Built from model {pp.pp(m)} in {timer() - start}")
 # -
+
+
 
 
 
