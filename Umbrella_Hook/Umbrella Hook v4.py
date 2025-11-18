@@ -204,14 +204,28 @@ left_wing = (
 )
 
 # build the tooth
+
+tooth = SimpleNamespace()
+
+tooth.height = 12
+tooth.width = m.wing_thickness
+tooth.length = m.wing_thickness
+tooth.top_width = 2
+tooth.top_length = 1
+tooth.width_offset = 0 # l/r centering
+tooth.length_offset = (m.h_ext - tooth.length) / 4
+tooth.width_offset_top = 0 # l/r centering
+tooth.length_offset_top = (tooth.top_length  - tooth.length) / 2
+m.tooth = tooth
+
 left_wing = (
     left_wing
     .faces("+Z").workplane(centerOption="CenterOfMass")
-    .center(0,1)
-    .rect(8,8)
-    .workplane(offset=12)
-    .center(0,-3.5)
-    .rect(2,1)
+    .center(tooth.width_offset, tooth.length_offset)
+    .rect(tooth.width, tooth.length)
+    .workplane(offset=tooth.height)
+    .center(tooth.width_offset_top, tooth.length_offset_top)
+    .rect(tooth.top_width,tooth.top_length)
     .loft(combine=True)
 )
 
@@ -227,7 +241,7 @@ replay(body)
 
 body.val().exportStl("Umbrella Hook v4.stl", ascii=True)
 
-print(f"Total time: {timer()-start}")
+print(f"Built from model {pp.pp(m)} in {timer() - start}")
 # -
 
 
