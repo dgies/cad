@@ -112,7 +112,7 @@ replay(written)
 
 # +
 
-body.val().exportStl("Dutch Baby.stl", ascii=False)
+written.val().exportStl("Dutch Baby.stl", ascii=False)
 
 print(f"Built from model {pp.pp(m)} in {timer() - start}")
 # -
