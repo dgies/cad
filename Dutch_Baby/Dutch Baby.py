@@ -54,11 +54,11 @@ m.text = [
     "Skillet in oven",
     "Conv bake 425°F",
     "4 eggs",
-    "2/3C milk",
-    "1/4ts salt",
-    "1/4ts vanilla",
-    "2/3C AP flour",
-    "1oz hard fat",
+    "2/3 C milk",
+    "1/4 tsp salt",
+    "1/4 tsp vanilla",
+    "2/3 C AP flour",
+    "1 oz hard fat",
     "15min"
 ]
 m.fontsize = 10
@@ -87,25 +87,39 @@ body = s.extrude(m.thickness).edges("|Z").fillet(m.radius)
 show(body)
 
 # +
-written = (
+holed = (
     body
-        .faces(">Z")
-        .workplane()
-        .center(0,m.height - 1.5*m.fontsize)
-        # .cylinder(10,10)
-        .text(m.text[0], fontsize=m.fontsize*1.1, distance=m.depth, fontPath=m.font,
-         halign="center", valign="center", kind=m.fontface, )
-        .center(-m.width/2+m.h_padding, 0)
-        # .workplane()
-        # .text(m.text[1], fontsize=m.fontsize, distance=m.depth, fontPath=m.font,
-        #  halign="left", valign="center", kind=m.fontface)
+    .faces(">Z")
+    .workplane()
+    .center(0,m.height)
+    # .cylinder(m.thickness, m.hole_size+2*m.hole_boss, centered=(True, True, False))
+    .circle((m.hole_size/2+m.hole_boss))
+    .extrude(-m.thickness)
+    .faces(">Z")
+    .workplane()
+    .hole(m.hole_size)
 )
 
+replay(holed)
+
+# +
+written = (
+    holed
+        .faces(">Z")
+        .workplane()
+        .center(0,- 1.5*m.fontsize) # spacing at top
+        .text(m.text[0], fontsize=m.fontsize*1.1, distance=m.depth, fontPath=m.font,
+         halign="center", valign="center", kind=m.fontface, )
+        .center(-m.width/2+m.h_padding, 0) # indent for lines
+)
+
+replay(written)
+
+# +
 for line in m.text[1:]:
     written = (
         written
-        # .center(-m.width/2+m.h_padding,- 2*m.fontsize)
-        .center(0,- 1.25*m.fontsize)
+        .center(0,- 1.25*m.fontsize) # line feed
         .text(line, fontsize=m.fontsize, distance=m.depth, fontPath=m.font,
          halign="left", valign="center", kind=m.fontface)
     )
