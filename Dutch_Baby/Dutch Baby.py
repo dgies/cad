@@ -58,7 +58,7 @@ m.text = [
     "1/4 tsp salt",
     "1/4 tsp vanilla",
     "2/3 C AP flour",
-    "1 oz hard fat",
+    "1 ounce hard fat",
     "15min"
 ]
 m.fontsize = 10
