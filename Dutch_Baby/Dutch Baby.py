@@ -42,8 +42,8 @@ print(f"Initialized jupyter_cadquery with replay {datetime.now()}")
 
 # +
 m = SimpleNamespace()
-m.width = 85
-m.height = 150
+m.width = 90
+m.height = 140
 m.thickness = 2.5
 m.hole_size = 10
 m.hole_boss = 5
@@ -51,15 +51,18 @@ m.hole_offset = 5
 m.radius = 10
 m.text = [
     "DUTCH BABY",
+    "Skillet in oven",
+    "Conv bake 425°F",
     "4 eggs",
     "2/3C milk",
     "1/4ts salt",
     "1/4ts vanilla",
     "2/3C AP flour",
-    "425°F 15min"
+    "1oz hard fat",
+    "15min"
 ]
 m.fontsize = 10
-m.h_padding = m.fontsize 
+m.h_padding = m.fontsize/2
 
 m.depth=-1.0
 m.font = "Arial.ttf"
@@ -102,7 +105,7 @@ for line in m.text[1:]:
     written = (
         written
         # .center(-m.width/2+m.h_padding,- 2*m.fontsize)
-        .center(0,- 2*m.fontsize)
+        .center(0,- 1.25*m.fontsize)
         .text(line, fontsize=m.fontsize, distance=m.depth, fontPath=m.font,
          halign="left", valign="center", kind=m.fontface)
     )
