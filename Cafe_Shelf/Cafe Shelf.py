@@ -15,6 +15,7 @@
 
 # +
 from datetime import datetime
+from math import sqrt
 from types import SimpleNamespace
 from timeit import default_timer as timer
 start = timer()
@@ -39,17 +40,17 @@ else:
 
 m = SimpleNamespace()
 # Measurements:
-m.shelf_width=88# Shelf width 88mm
-# Height 177mm
+m.shelf_width = 88 # Shelf width 88mm
+m.height = 177 # Height 177mm
 # Rail thickness 44.6mm
 m.radius = 120 # Rail Internal radius 120mm
 m.shelf_radius = m.radius - m.shelf_width # Shelf Internal radius = 32mm
-m.base_ext = 60
+m.base_ext = 30
 # Saucer diameter 6"
 # Saucer foot diameter 3.25"
 
 
-print(f"Initialized jupyter_cadquery with replay in {timer() - start}")
+print(f"Initialized jupyter_cadquery with replay in {timer() - start}  Model params {m}")
 
 # +
 # Sketch Base:
@@ -57,51 +58,95 @@ print(f"Initialized jupyter_cadquery with replay in {timer() - start}")
 # Close
 # Fillet corners?
 
-base = (
-        cq.Workplane("YZ")
-        .moveTo(0,m.shelf_radius) # Move (shelf_radius, 0)
-        .line(0, -m.base_ext)# Draw (0, -base_ext)
-        .line(m.shelf_width, 0) # Draw (shelf_width, 0)
-        .line(0, m.base_ext)# Draw (0, base_ext)
-        .tangentArcPoint((-m.radius, m.radius))# Arc CCW (radius, 90)
-        .line(-m.base_ext, 0)# Draw (-base_ext, 0)
-        .line(0, -m.shelf_width)# Draw (0, -shelf_width)
-        .line(m.base_ext, 0)# Draw (0, base_ext)
-        .tangentArcPoint((m.shelf_radius, -m.shelf_radius))# Arc CW (shelf_radius, 90)
-        .close()
+# TODO:
+# Instead of creating face on workplane, make a Sketch, and place/loft those on a WP
+# see https://cadquery.readthedocs.io/en/latest/sketch.html#lofting-between-two-sketches
+# base = (
+#         cq.Workplane("XY")
+#         .moveTo(0,m.shelf_radius) # Move (shelf_radius, 0)
+#         .line(0, -m.base_ext)# Draw (0, -base_ext)
+#         .line(m.shelf_width, 0) # Draw (shelf_width, 0)
+#         .line(0, m.base_ext)# Draw (0, base_ext)
+#         .tangentArcPoint((-m.radius, m.radius))# Arc CCW (radius, 90)
+#         .line(-m.base_ext, 0)# Draw (-base_ext, 0)
+#         .line(0, -m.shelf_width)# Draw (0, -shelf_width)
+#         .line(m.base_ext, 0)# Draw (0, base_ext)
+#         .tangentArcPoint((m.shelf_radius, -m.shelf_radius))# Arc CW (shelf_radius, 90)
+#         .close()
+# )
+
+# replay(base)
+
+# +
+s1 = (
+    cq.Sketch()
+    .segment((m.shelf_radius,0), (m.shelf_radius, -m.base_ext)) # Move (shelf_radius, 0) # Draw (0, -base_ext)
+    .segment( m.shelf_width, 0.0) # Draw (shelf_width, 0)
+    .segment(m.base_ext, 90.0)# Draw (0, base_ext)
+    .arc( (0,0), m.radius, 0, 90)
+    .segment(m.base_ext, 180.0)# Draw (-base_ext, 0)
+    .segment(-m.shelf_width, 90.0)# Draw (0, -shelf_width)
+    .segment(m.base_ext, 0)# Draw (0, base_ext)
+    .arc( (0,0), m.shelf_radius, 0, 90)
+    .assemble()
 )
 
-replay(base)
+replay(s1)
+
+print(s1)
+# s1b = cq.Workplane("XY").placeSketch(s1).extrude(10)
+
+# replay(s1b)
+# -
+
+s1b = cq.Workplane("XY").placeSketch(s1).toPending().extrude(10)
+print(s1b)
+replay(s1b)
 
 # +
 
 # Sketch Top:
-# Move (shelf_radius, 0)
-# Move (0, -base_ext)
-# Draw (shelf_width, 0)
-# Draw (0, base_ext)
-# Arc CCW (radius, 90)
-# Draw (-base_ext, 0)
-# Draw (0, -shelf_width)
-# Arc CCW (base_ext+shelf_radius, 90)
-# Close
 # Fillet corners?
+s2 = (    
+    cq.Sketch()#, origin=(0,0,m.height))
+    .segment( (m.shelf_radius, -m.base_ext), (m.shelf_radius+m.shelf_width, -m.base_ext) ) # Draw (shelf_width, 0)
+    .segment(m.base_ext, 90.0) # Draw (0, base_ext)
+    .arc( (0,0), m.radius, 0, 90, )  # Arc CCW (radius, 90)
+    .segment(m.base_ext, 180.0) # Draw (-base_ext, 0)
+    .segment(-m.shelf_width, 90.0) # Draw (0, -shelf_width)
+    .arc( (  m.shelf_radius - sqrt(0.5)*(m.shelf_radius+m.base_ext),  m.shelf_radius - sqrt(0.5)*(m.shelf_radius+m.base_ext) ), (m.shelf_radius+0.01*m.shelf_width, -m.base_ext) )
+    .close()
+    .assemble()# Close
+)
 
+replay(s2)
 
 
 # +
-Loft base to top by height
-Fillet edges
+# Loft base to top by height
+# Fillet edges
 
-Select top face
-Import apple logo SVG as path
-Apply logo path to top face, align to corner, center, extrude -Z 2mm
+body = cq.Workplane("XY").placeSketch(s1, s2.moved(z=m.height)).loft()
 
-Select bottom face
-Align to flat side
-Draw text "Caffè Macs IL01 Espresso Bar" in font SF Pro Display
-
-For extra credit, find out how to draw it on a curved surface
+replay(body)
 # -
+
+
+# Select top face
+# Import apple logo SVG as path
+# Apply logo path to top face, align to corner, center, extrude -Z 2mm
+#
+# Select bottom face
+# Align to flat side
+# Draw text "Caffè Macs IL01 Espresso Bar" in font SF Pro Display
+#
+# For extra credit, find out how to draw it on a curved surface
+# +
+
+body.val().exportStl("Cafe Shelf.stl", ascii=False)
+
+print(f"Built from model {pp.pp(m)} in {timer() - start}")
+# -
+
 
 
