@@ -95,8 +95,25 @@ replay(s2)
 body = cq.Workplane("XY").placeSketch(s1, s2.moved(z=m.height)).loft().fillet(m.fillet)
 
 replay(body)
-# -
 
+
+# +
+
+signed = (
+        body
+        .faces("<Z")
+        .workplane()
+        # .center(0.5*m.radius, -0.5*m.radius)
+        .transformed(offset=cq.Vector((m.radius-m.base_ext)/2, -1*(m.radius-m.base_ext)/2, 0.0), rotate=cq.Vector(0, 0,225))
+        # .cylinder(10,10)
+        .text(f"Caffè Macs IL01 Espresso Bar", fontsize=12, distance=-2, 
+              # fontPath="Arial.ttf", 
+              fontPath="SFPRODISPLAYREGULAR.OTF",
+         halign="center", valign="center")
+)
+
+replay(signed)
+# -
 
 # Select top face
 # Import apple logo SVG as path
@@ -110,7 +127,7 @@ replay(body)
 # For extra credit, find out how to draw it on a curved surface
 # +
 
-body.val().exportStl("Cafe Shelf.stl", ascii=False)
+signed.val().exportStl("Cafe Shelf.stl", ascii=False)
 
 print(f"Built from model {pp.pp(m)} in {timer() - start}")
 # -

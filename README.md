@@ -1,6 +1,9 @@
 # dgies' CAD Projects 
 A collection of code-as-cad personal projects.
 
+## Cafe Shelf
+Uses lofted curves in CadQuery to form a shelf for holding a saucer on the inside of a cafe planter box
+
 ## Dutch Baby
 Recipe placard with hanger hook, modeled in CadQuery
 
