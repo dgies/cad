@@ -46,36 +46,12 @@ m.height = 177 # Height 177mm
 m.radius = 120 # Rail Internal radius 120mm
 m.shelf_radius = m.radius - m.shelf_width # Shelf Internal radius = 32mm
 m.base_ext = 30
+m.fillet = 3
 # Saucer diameter 6"
 # Saucer foot diameter 3.25"
 
 
 print(f"Initialized jupyter_cadquery with replay in {timer() - start}  Model params {m}")
-
-# +
-# Sketch Base:
-
-# Close
-# Fillet corners?
-
-# TODO:
-# Instead of creating face on workplane, make a Sketch, and place/loft those on a WP
-# see https://cadquery.readthedocs.io/en/latest/sketch.html#lofting-between-two-sketches
-# base = (
-#         cq.Workplane("XY")
-#         .moveTo(0,m.shelf_radius) # Move (shelf_radius, 0)
-#         .line(0, -m.base_ext)# Draw (0, -base_ext)
-#         .line(m.shelf_width, 0) # Draw (shelf_width, 0)
-#         .line(0, m.base_ext)# Draw (0, base_ext)
-#         .tangentArcPoint((-m.radius, m.radius))# Arc CCW (radius, 90)
-#         .line(-m.base_ext, 0)# Draw (-base_ext, 0)
-#         .line(0, -m.shelf_width)# Draw (0, -shelf_width)
-#         .line(m.base_ext, 0)# Draw (0, base_ext)
-#         .tangentArcPoint((m.shelf_radius, -m.shelf_radius))# Arc CW (shelf_radius, 90)
-#         .close()
-# )
-
-# replay(base)
 
 # +
 s1 = (
@@ -92,16 +68,6 @@ s1 = (
 )
 
 replay(s1)
-
-print(s1)
-# s1b = cq.Workplane("XY").placeSketch(s1).extrude(10)
-
-# replay(s1b)
-# -
-
-s1b = cq.Workplane("XY").placeSketch(s1).toPending().extrude(10)
-print(s1b)
-replay(s1b)
 
 # +
 
@@ -126,7 +92,7 @@ replay(s2)
 # Loft base to top by height
 # Fillet edges
 
-body = cq.Workplane("XY").placeSketch(s1, s2.moved(z=m.height)).loft()
+body = cq.Workplane("XY").placeSketch(s1, s2.moved(z=m.height)).loft().fillet(m.fillet)
 
 replay(body)
 # -
@@ -134,6 +100,7 @@ replay(body)
 
 # Select top face
 # Import apple logo SVG as path
+# Use example https://gist.github.com/dov/8d9b0304ba85e3229aabccac3c6468ef
 # Apply logo path to top face, align to corner, center, extrude -Z 2mm
 #
 # Select bottom face
